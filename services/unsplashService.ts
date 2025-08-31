@@ -185,8 +185,13 @@ export async function fetchPromoImage(promoText: string, aspectRatio: AspectRati
     const searchQuery = encodeURIComponent(keywords);
     const orientation = getOrientation(aspectRatio);
     
+    // Add randomness for more variety
+    const randomPage = Math.floor(Math.random() * 3) + 1; // Random page 1-3
+    const orderOptions = ['relevant', 'latest', 'popular'];
+    const randomOrder = orderOptions[Math.floor(Math.random() * orderOptions.length)];
+    
     // Unsplash API endpoint - search for high quality images
-    const url = `https://api.unsplash.com/search/photos?query=${searchQuery}&orientation=${orientation}&per_page=5&order_by=relevant`;
+    const url = `https://api.unsplash.com/search/photos?query=${searchQuery}&orientation=${orientation}&per_page=10&page=${randomPage}&order_by=${randomOrder}`;
     
     const response = await fetch(url, {
       headers: {
@@ -201,9 +206,10 @@ export async function fetchPromoImage(promoText: string, aspectRatio: AspectRati
     const data = await response.json();
     
     if (data.results && data.results.length > 0) {
-      // Return the first high-quality result
-      const image = data.results[0];
-      console.log(`Found image: ${image.description || image.alt_description || 'No description'}`);
+      // Randomly select one image from the results for variety
+      const randomIndex = Math.floor(Math.random() * data.results.length);
+      const image = data.results[randomIndex];
+      console.log(`Found image (${randomIndex + 1}/${data.results.length}): ${image.description || image.alt_description || 'No description'}`);
       return image.urls.regular || image.urls.full;
     } else {
       console.log('No results found for keywords, trying fallback...');
@@ -221,7 +227,9 @@ export async function fetchPromoImage(promoText: string, aspectRatio: AspectRati
       if (fallbackResponse.ok) {
         const fallbackData = await fallbackResponse.json();
         if (fallbackData.results && fallbackData.results.length > 0) {
-          return fallbackData.results[0].urls.regular;
+          // Also randomize fallback selection
+          const randomFallbackIndex = Math.floor(Math.random() * fallbackData.results.length);
+          return fallbackData.results[randomFallbackIndex].urls.regular;
         }
       }
       
